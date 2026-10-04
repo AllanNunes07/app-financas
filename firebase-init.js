@@ -10,11 +10,11 @@ const firebaseConfig = {
 
 // Inicializa Firebase
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+window.auth = firebase.auth();
+window.db = firebase.firestore();
 
 // Variável global para armazenar o usuário
-let firebaseUser = null;
+window.firebaseUser = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     const loginOverlay = document.getElementById('login-overlay');
@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     sidebarLogoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        auth.signOut();
+        window.auth.signOut();
     });
     const navMenu = document.querySelector('.nav-menu');
     if (navMenu) {
@@ -44,10 +44,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Monitora o estado de Autenticação
-    auth.onAuthStateChanged(async (user) => {
+    window.auth.onAuthStateChanged(async (user) => {
         if (user) {
             // Logado
-            firebaseUser = user;
+            window.firebaseUser = user;
             loginOverlay.style.display = 'none';
             appWrapper.style.display = 'flex';
             
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             // Deslogado
-            firebaseUser = null;
+            window.firebaseUser = null;
             loginOverlay.style.display = 'flex';
             appWrapper.style.display = 'none';
         }
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = passwordInput.value.trim();
         loginError.style.display = 'none';
 
-        auth.signInWithEmailAndPassword(email, password)
+        window.auth.signInWithEmailAndPassword(email, password)
             .catch(error => {
                 console.error("Login Error:", error);
                 loginError.textContent = "E-mail ou senha incorretos.";
@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        auth.createUserWithEmailAndPassword(email, password)
+        window.auth.createUserWithEmailAndPassword(email, password)
             .catch(error => {
                 console.error("Register Error:", error);
                 if (error.code === 'auth/email-already-in-use') {
