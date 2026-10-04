@@ -352,14 +352,15 @@ const toastMessageEl = document.getElementById('toast-message');
 // 3. Application Initialization
 // ==========================================================================
 
-document.addEventListener('DOMContentLoaded', () => {
+window.initializeAppWithFirebase = async function() {
     initThemeAndPrivacy();
     setCurrentDateHeader();
-    loadData();
+    await loadData();
     updateMonthSelectorUI();
     initEventListeners();
     updateDashboard();
-});
+};
+
 
 function initThemeAndPrivacy() {
     // 1. Theme
@@ -410,95 +411,138 @@ function setCurrentDateHeader() {
 // 4. Data Loading & Persistence
 // ==========================================================================
 
-function loadData() {
-    const storedUsers = localStorage.getItem('finpurple_users');
-    if (storedUsers) {
-        users = JSON.parse(storedUsers);
-    } else {
-        users = [
-            { id: '1', name: 'Usuário 1' },
-            { id: '2', name: 'Usuário 2' }
-        ];
-        localStorage.setItem('finpurple_users', JSON.stringify(users));
-    }
-
-    const storedActiveId = localStorage.getItem('finpurple_active_user_id');
-    if (storedActiveId && (storedActiveId === '1' || storedActiveId === '2')) {
-        activeUserId = storedActiveId;
-    } else {
-        activeUserId = '1';
-        localStorage.setItem('finpurple_active_user_id', activeUserId);
-    }
-
-    const accKey = `finpurple_accounts_user_${activeUserId}`;
-    const storedAcc = localStorage.getItem(accKey);
-    if (storedAcc) {
-        accounts = JSON.parse(storedAcc);
-    } else {
-        accounts = activeUserId === '1' ? [...defaultAccountsUser1] : [...defaultAccountsUser2];
-        localStorage.setItem(accKey, JSON.stringify(accounts));
-    }
-
-    const cardsKey = `finpurple_cards_user_${activeUserId}`;
-    const storedCards = localStorage.getItem(cardsKey);
-    if (storedCards) {
-        cards = JSON.parse(storedCards);
-        cards.forEach(c => {
-            if (c.name === "Nubank Ultravioleta") c.name = "Nubank";
-            if (c.name === "Inter Mastercard Black") c.name = "Inter";
-            if (c.name === "Itaú Mastercard Black") c.name = "Itaú";
-        });
-        localStorage.setItem(cardsKey, JSON.stringify(cards));
-    } else {
-        cards = activeUserId === '1' ? [...defaultCardsUser1] : [...defaultCardsUser2];
-        localStorage.setItem(cardsKey, JSON.stringify(cards));
-    }
-
-    const txKey = `finpurple_transactions_user_${activeUserId}`;
-    const storedTx = localStorage.getItem(txKey);
-    if (storedTx) {
-        transactions = JSON.parse(storedTx);
-        transactions.forEach(t => {
-            if (!t.paymentMethod) t.paymentMethod = (t.category === 'card') ? 'card' : 'account';
-            if (!t.accountId && t.paymentMethod === 'account' && accounts.length > 0) t.accountId = accounts[0].id;
-            if (!t.cardId && t.paymentMethod === 'card' && cards.length > 0) t.cardId = cards[0].id;
-            if (t.paymentMethod === 'card' && !t.invoiceMonth) t.invoiceMonth = calculateInvoiceMonth(t.date, t.cardId);
-            if (!t.installments) t.installments = { current: 1, total: 1 };
-        });
-    } else {
-        transactions = activeUserId === '1' ? [...defaultTransactionsUser1] : [...defaultTransactionsUser2];
-        localStorage.setItem(txKey, JSON.stringify(transactions));
-    }
-
-    const invKey = `finpurple_invoices_user_${activeUserId}`;
-    const storedInvoices = localStorage.getItem(invKey);
-    paidInvoices = storedInvoices ? JSON.parse(storedInvoices) : [];
-
-    const goalsKey = `finpurple_goals_user_${activeUserId}`;
-    const storedGoals = localStorage.getItem(goalsKey);
-    if (storedGoals) {
-        goals = JSON.parse(storedGoals);
-    } else {
-        if (activeUserId === '1') {
-            goals = [
-                { id: 'g1', name: 'Reserva de Emergência', target: 10000, current: 2500 },
-                { id: 'g2', name: 'Viagem de Férias', target: 4000, current: 650 }
-            ];
+async function loadData() {
+    if (!window.db || !window.firebaseUser) return;
+    
+    try {
+        const docRef = window.db.collection('users_data').doc(window.firebaseUser.uid);
+        const doc = await docRef.get();
+        
+        let savedData = null;
+        if (doc.exists) {
+            savedData = doc.data();
         } else {
-            goals = [
-                { id: 'g3', name: 'Notebook Novo', target: 8000, current: 1500 }
-            ];
+            // First time login - Check if there is data in localStorage to migrate
+            const storedUsers = localStorage.getItem('finpurple_users');
+            if (storedUsers) {
+                savedData = {
+                    users: JSON.parse(storedUsers),
+                    activeUserId: localStorage.getItem('finpurple_active_user_id') || '1',
+                    accounts_user_1: JSON.parse(localStorage.getItem('finpurple_accounts_user_1') || 'null'),
+                    cards_user_1: JSON.parse(localStorage.getItem('finpurple_cards_user_1') || 'null'),
+                    transactions_user_1: JSON.parse(localStorage.getItem('finpurple_transactions_user_1') || 'null'),
+                    invoices_user_1: JSON.parse(localStorage.getItem('finpurple_invoices_user_1') || 'null'),
+                    goals_user_1: JSON.parse(localStorage.getItem('finpurple_goals_user_1') || 'null'),
+                    accounts_user_2: JSON.parse(localStorage.getItem('finpurple_accounts_user_2') || 'null'),
+                    cards_user_2: JSON.parse(localStorage.getItem('finpurple_cards_user_2') || 'null'),
+                    transactions_user_2: JSON.parse(localStorage.getItem('finpurple_transactions_user_2') || 'null'),
+                    invoices_user_2: JSON.parse(localStorage.getItem('finpurple_invoices_user_2') || 'null'),
+                    goals_user_2: JSON.parse(localStorage.getItem('finpurple_goals_user_2') || 'null')
+                };
+                await docRef.set(savedData);
+            }
         }
-        localStorage.setItem(goalsKey, JSON.stringify(goals));
+
+        if (savedData && savedData.users) {
+            users = savedData.users;
+            activeUserId = savedData.activeUserId || '1';
+        } else {
+            users = [
+                { id: '1', name: 'Usuário 1' },
+                { id: '2', name: 'Usuário 2' }
+            ];
+            activeUserId = '1';
+            await saveData('users');
+        }
+
+        // Fetch collections based on activeUserId
+        const accKey = `accounts_user_${activeUserId}`;
+        if (savedData && savedData[accKey]) {
+            accounts = savedData[accKey];
+        } else {
+            accounts = activeUserId === '1' ? [...defaultAccountsUser1] : [...defaultAccountsUser2];
+            await saveData('accounts');
+        }
+
+        const cardsKey = `cards_user_${activeUserId}`;
+        if (savedData && savedData[cardsKey]) {
+            cards = savedData[cardsKey];
+            cards.forEach(c => {
+                if (c.name === "Nubank Ultravioleta") c.name = "Nubank";
+                if (c.name === "Inter Mastercard Black") c.name = "Inter";
+                if (c.name === "Itaú Mastercard Black") c.name = "Itaú";
+            });
+        } else {
+            cards = activeUserId === '1' ? [...defaultCardsUser1] : [...defaultCardsUser2];
+            await saveData('cards');
+        }
+
+        const txKey = `transactions_user_${activeUserId}`;
+        if (savedData && savedData[txKey]) {
+            transactions = savedData[txKey];
+            transactions.forEach(t => {
+                if (!t.paymentMethod) t.paymentMethod = (t.category === 'card') ? 'card' : 'account';
+                if (!t.accountId && t.paymentMethod === 'account' && accounts.length > 0) t.accountId = accounts[0].id;
+                if (!t.cardId && t.paymentMethod === 'card' && cards.length > 0) t.cardId = cards[0].id;
+                if (t.paymentMethod === 'card' && !t.invoiceMonth) t.invoiceMonth = calculateInvoiceMonth(t.date, t.cardId);
+                if (!t.installments) t.installments = { current: 1, total: 1 };
+            });
+        } else {
+            transactions = activeUserId === '1' ? [...defaultTransactionsUser1] : [...defaultTransactionsUser2];
+            await saveData('transactions');
+        }
+
+        const invKey = `invoices_user_${activeUserId}`;
+        if (savedData && savedData[invKey]) {
+            paidInvoices = savedData[invKey];
+        } else {
+            paidInvoices = [];
+            await saveData('invoices');
+        }
+
+        const goalsKey = `goals_user_${activeUserId}`;
+        if (savedData && savedData[goalsKey]) {
+            goals = savedData[goalsKey];
+        } else {
+            if (activeUserId === '1') {
+                goals = [
+                    { id: 'g1', name: 'Reserva de Emergência', target: 10000, current: 2500 },
+                    { id: 'g2', name: 'Viagem de Férias', target: 4000, current: 650 }
+                ];
+            } else {
+                goals = [
+                    { id: 'g3', name: 'Notebook Novo', target: 8000, current: 1500 }
+                ];
+            }
+            await saveData('goals');
+        }
+        
+    } catch (e) {
+        console.error("Erro ao carregar dados do Firebase", e);
+        showToast("Erro ao carregar os dados. Verifique a internet.");
     }
 }
 
-function saveData(type) {
-    if (!type || type === 'accounts') localStorage.setItem(`finpurple_accounts_user_${activeUserId}`, JSON.stringify(accounts));
-    if (!type || type === 'cards') localStorage.setItem(`finpurple_cards_user_${activeUserId}`, JSON.stringify(cards));
-    if (!type || type === 'transactions') localStorage.setItem(`finpurple_transactions_user_${activeUserId}`, JSON.stringify(transactions));
-    if (!type || type === 'invoices') localStorage.setItem(`finpurple_invoices_user_${activeUserId}`, JSON.stringify(paidInvoices));
-    if (!type || type === 'goals') localStorage.setItem(`finpurple_goals_user_${activeUserId}`, JSON.stringify(goals));
+async function saveData(type) {
+    if (!window.db || !window.firebaseUser) return;
+    
+    try {
+        const updateObj = {};
+        if (!type || type === 'accounts') updateObj[`accounts_user_${activeUserId}`] = accounts;
+        if (!type || type === 'cards') updateObj[`cards_user_${activeUserId}`] = cards;
+        if (!type || type === 'transactions') updateObj[`transactions_user_${activeUserId}`] = transactions;
+        if (!type || type === 'invoices') updateObj[`invoices_user_${activeUserId}`] = paidInvoices;
+        if (!type || type === 'goals') updateObj[`goals_user_${activeUserId}`] = goals;
+        if (type === 'users') {
+            updateObj.users = users;
+            updateObj.activeUserId = activeUserId;
+        }
+
+        await window.db.collection('users_data').doc(window.firebaseUser.uid).set(updateObj, { merge: true });
+    } catch (e) {
+        console.error("Erro ao salvar dados no Firebase", e);
+        showToast("Erro ao sincronizar na nuvem.");
+    }
 }
 
 // ==========================================================================
