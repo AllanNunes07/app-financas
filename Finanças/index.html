@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinPurple - Gestão Financeira Pessoal</title>
+    <meta name="description" content="Controle financeiro pessoal de nível bancário com gestão de contas, cartões de crédito, faturas, metas e lançamentos.">
+    <link rel="stylesheet" href="style.css">
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="light-theme">
+    <div class="app-container">
+        <!-- Sidebar Navigation (Desktop) -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#purple-grad)" />
+                        <path d="M2 17L12 22L22 17M2 12L12 17L22 12" stroke="url(#purple-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <defs>
+                            <linearGradient id="purple-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#8B5CF6" />
+                                <stop offset="1" stop-color="#6366F1" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h2>FinPurple</h2>
+            </div>
+
+            <!-- Quick Add Button in Sidebar (like Mobills Web) -->
+            <div class="sidebar-quick-action">
+                <button class="btn-sidebar-add" id="btn-sidebar-add" title="Novo Lançamento Rápido">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Novo Registro</span>
+                </button>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="nav-item active" id="nav-dashboard">
+                        <a href="#">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="9" rx="1"></rect>
+                                <rect x="14" y="3" width="7" height="5" rx="1"></rect>
+                                <rect x="14" y="12" width="7" height="9" rx="1"></rect>
+                                <rect x="3" y="16" width="7" height="5" rx="1"></rect>
+                            </svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-accounts-cards">
+                        <a href="#">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                                <line x1="1" y1="10" x2="23" y2="10"></line>
+                            </svg>
+                            <span>Contas & Cartões</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-transactions">
+                        <a href="#">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="1" x2="12" y2="23"></line>
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                            </svg>
+                            <span>Lançamentos</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" id="nav-categories">
+                        <a href="#">
+                            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                                <path d="M2 12h20"></path>
+                            </svg>
+                            <span>Distribuição</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <p class="sidebar-footer-title">Perfil Ativo</p>
+                <div class="user-profiles-container">
+                    <div class="profile-avatar active" id="avatar-user-1" data-user-id="1" title="Usuário 1">U1</div>
+                    <div class="profile-avatar" id="avatar-user-2" data-user-id="2" title="Usuário 2">U2</div>
+                </div>
+                <div class="active-user-details">
+                    <div class="name-edit-wrapper">
+                        <span class="user-name" id="active-user-name">Usuário 1</span>
+                        <input type="text" id="edit-name-input" class="edit-name-input" maxlength="15">
+                        <button class="btn-edit-name" id="btn-edit-name" title="Editar nome">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                <path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                            </svg>
+                        </button>
+                        <button class="btn-save-name" id="btn-save-name" title="Salvar">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="user-status">Conta Ativa</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header (Inspired by Mobills & Pierre) -->
+            <header class="main-header">
+                <div class="header-welcome">
+                    <h1 class="welcome-text">Dashboard</h1>
+                    <p class="date-today" id="current-date">Hoje</p>
+                </div>
+
+                <!-- Month Selector Component (Pill with Popover) -->
+                <div class="month-selector-container">
+                    <div class="month-selector" id="month-selector-pill">
+                        <button class="btn-month-nav" id="btn-prev-month" title="Mês anterior">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <div class="month-dropdown-trigger" id="btn-month-dropdown" title="Abrir seleção de meses">
+                            <span class="active-month-label" id="active-month-label">setembro</span>
+                            <svg class="month-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </div>
+                        <button class="btn-month-nav" id="btn-next-month" title="Próximo mês">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Month Picker Popover (Mobills Style) -->
+                    <div class="month-picker-popover" id="month-picker-popover">
+                        <div class="month-picker-header">
+                            <button type="button" class="btn-picker-year-nav" id="btn-picker-prev-year" title="Ano anterior">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                            </button>
+                            <span class="picker-year-title" id="picker-year-title">2026</span>
+                            <button type="button" class="btn-picker-year-nav" id="btn-picker-next-year" title="Próximo ano">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="month-picker-grid" id="month-picker-grid">
+                            <!-- Inserido dinamicamente: JAN, FEV, MAR, ABR, MAI, JUN, JUL, AGO, SET, OUT, NOV, DEZ -->
+                        </div>
+
+                        <div class="month-picker-footer">
+                            <button type="button" class="btn-picker-action" id="btn-picker-cancel">CANCELAR</button>
+                            <button type="button" class="btn-picker-action" id="btn-picker-current-month">MÊS ATUAL</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header-actions">
+                    <!-- Privacy Toggle (Eye icon from Image 1 & 2) -->
+                    <button class="btn-icon-pill" id="btn-toggle-privacy" title="Ocultar / Mostrar Valores">
+                        <svg id="icon-eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg id="icon-eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+
+                    <!-- Theme Switcher (Claro / Escuro) -->
+                    <button class="btn-icon-pill" id="btn-toggle-theme" title="Alternar Modo Claro / Escuro">
+                        <svg id="icon-theme-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                        <svg id="icon-theme-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                    </button>
+
+                    <button class="btn btn-secondary-outline" id="btn-open-transfer" title="Transferir entre contas">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 1l4 4-4 4"></path>
+                            <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                            <path d="M7 23l-4-4 4-4"></path>
+                            <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                        </svg>
+                        <span>Transferir</span>
+                    </button>
+
+                    <button class="btn btn-primary" id="btn-open-modal">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Novo Lançamento</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- 1. DASHBOARD VIEW -->
+            <div class="view-container active" id="dashboard-view">
+                
+                <!-- Financial Overview Cards (Exact Layout from Image 1 & Image 2) -->
+                <section class="cards-grid-mobills">
+                    <!-- 1. Saldo atual > -->
+                    <div class="metric-card card-saldo" id="card-saldo-link">
+                        <div class="metric-info">
+                            <div class="metric-title-row">
+                                <span class="metric-title">Saldo atual</span>
+                                <svg class="metric-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                            <div class="metric-value-wrap">
+                                <span class="card-value" id="total-balance">R$ 0,00</span>
+                            </div>
+                            <span class="metric-sub" id="balance-footer-text">Total: R$ 0,00 | Poupado: R$ 0,00</span>
+                        </div>
+                        <div class="metric-circle-icon circle-blue">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- 2. Receitas > -->
+                    <div class="metric-card card-receitas" id="card-receitas-link">
+                        <div class="metric-info">
+                            <div class="metric-title-row">
+                                <span class="metric-title">Receitas</span>
+                                <svg class="metric-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                            <div class="metric-value-wrap">
+                                <span class="card-value text-green" id="total-income">R$ 0,00</span>
+                            </div>
+                            <span class="metric-sub text-green">Entradas creditadas no mês</span>
+                        </div>
+                        <div class="metric-circle-icon circle-green">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="19" x2="12" y2="5"></line>
+                                <polyline points="5 12 12 5 19 12"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- 3. Despesas > -->
+                    <div class="metric-card card-despesas" id="card-despesas-link">
+                        <div class="metric-info">
+                            <div class="metric-title-row">
+                                <span class="metric-title">Despesas</span>
+                                <svg class="metric-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                            <div class="metric-value-wrap">
+                                <span class="card-value text-red" id="total-expense">R$ 0,00</span>
+                            </div>
+                            <span class="metric-sub" id="expense-sub-text">Conta: <strong id="fixed-share">R$ 0</strong> | Cartão: <strong id="card-share">R$ 0</strong></span>
+                        </div>
+                        <div class="metric-circle-icon circle-red">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <polyline points="19 12 12 19 5 12"></polyline>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- 4. Cartão de crédito > -->
+                    <div class="metric-card card-cartao" id="card-cartao-link">
+                        <div class="metric-info">
+                            <div class="metric-title-row">
+                                <span class="metric-title">Cartão de crédito</span>
+                                <svg class="metric-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                            <div class="metric-value-wrap">
+                                <span class="card-value text-purple" id="total-invoices-due">R$ 0,00</span>
+                            </div>
+                            <span class="metric-sub" id="invoices-footer-text">Faturas abertas no mês</span>
+                        </div>
+                        <div class="metric-circle-icon circle-teal">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="1" y="4" width="22" height="16" rx="2"></rect>
+                                <line x1="1" y1="10" x2="23" y2="10"></line>
+                            </svg>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section Charts Side-by-Side (Image 1: Despesas por categoria & Balanço mensal) -->
+                <div class="dashboard-charts-grid-duo">
+                    <!-- Left: Despesas por categoria com Donut e Total no Centro -->
+                    <div class="chart-card donut-dashboard-card">
+                        <div class="chart-card-header-clean">
+                            <h3>Despesas por categoria</h3>
+                            <a href="#" class="link-view-more" id="link-goto-categories">Ver detalhes</a>
+                        </div>
+                        <div class="donut-chart-flex-wrap">
+                            <div class="donut-canvas-holder">
+                                <canvas id="dashboardCategoryChart"></canvas>
+                                <!-- Central Total Overlay inside Donut Hole (like in Images 1 & 3) -->
+                                <div class="donut-center-total" id="donut-center-total">
+                                    <span class="center-label">Total</span>
+                                    <span class="center-amount" id="donut-center-amount">R$ 0,00</span>
+                                </div>
+                            </div>
+                            <div class="donut-legend-side" id="dashboard-donut-legend">
+                                <!-- Preenchido dinamicamente via JS com mini badges -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Balanço Mensal (Entradas x Saídas) -->
+                    <div class="chart-card monthly-bar-card">
+                        <div class="chart-card-header-clean">
+                            <h3>Balanço mensal</h3>
+                            <span class="period-badge" id="balance-period-label">Julho 2026</span>
+                        </div>
+                        <div class="bar-chart-holder">
+                            <canvas id="monthlyBalanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Cards & Accounts Widgets -->
+                <div class="dashboard-widgets-grid">
+                    <!-- Meus Cartões de Crédito (Mobills / Nubank / Inter) -->
+                    <div class="dashboard-widget-card cards-section-widget">
+                        <div class="widget-header">
+                            <div class="widget-title-group">
+                                <div class="widget-badge purple">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                                </div>
+                                <h3>Cartões de Crédito</h3>
+                            </div>
+                            <div class="widget-actions">
+                                <div class="invoice-status-toggle">
+                                    <button class="btn-inv-toggle active" id="tab-invoices-open">Abertas</button>
+                                    <button class="btn-inv-toggle" id="tab-invoices-closed">Fechadas</button>
+                                </div>
+                                <button class="btn-action-text" id="btn-dashboard-add-card">+ Novo Cartão</button>
+                            </div>
+                        </div>
+                        <div class="cards-carousel-container" id="dashboard-cards-carousel">
+                            <!-- Populated dynamically with Pierre cards -->
+                        </div>
+                    </div>
+
+                    <!-- Minhas Contas Bancárias (Mobills Multi-Accounts) -->
+                    <div class="dashboard-widget-card accounts-section-widget">
+                        <div class="widget-header">
+                            <div class="widget-title-group">
+                                <div class="widget-badge blue">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v4M12 14v4M16 14v4"></path></svg>
+                                </div>
+                                <h3>Minhas Contas & Carteiras</h3>
+                            </div>
+                            <button class="btn-action-text" id="btn-dashboard-add-account">+ Nova Conta</button>
+                        </div>
+                        <div class="accounts-grid-container" id="dashboard-accounts-grid">
+                            <!-- Populated dynamically with accounts list -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evolution & Goals Grid -->
+                <div class="dashboard-charts-grid">
+                    <div class="chart-card main-chart">
+                        <div class="chart-card-header">
+                            <h3>Evolução do Fluxo Diário</h3>
+                            <span class="chart-subtitle">Entradas e saídas ao longo do mês</span>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="balanceChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-card savings-goals-card">
+                        <div class="goals-header-wrapper">
+                            <div class="widget-title-group">
+                                <div class="widget-badge yellow">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"></path><path d="M12 18V6"></path></svg>
+                                </div>
+                                <h3>Cofrinho (Metas)</h3>
+                            </div>
+                            <button class="btn-add-goal" id="btn-add-goal" title="Criar nova meta">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="goals-list" id="goals-list">
+                            <!-- Populated dynamically by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 2. CONTAS & CARTÕES DEDICATED VIEW -->
+            <div class="view-container" id="accounts-cards-view">
+                <section class="management-section">
+                    <div class="subtabs-bar">
+                        <button class="subtab-btn active" data-subtab="accounts-tab">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11"></path></svg>
+                            Minhas Contas Bancárias
+                        </button>
+                        <button class="subtab-btn" data-subtab="cards-tab">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            Meus Cartões de Crédito
+                        </button>
+                    </div>
+
+                    <!-- TAB 1: CONTAS -->
+                    <div class="subtab-pane active" id="accounts-tab">
+                        <div class="pane-header">
+                            <div>
+                                <h2>Gestão de Contas & Carteiras</h2>
+                                <p class="pane-subtitle">Gerencie suas contas correntes, poupanças e saldo em espécie.</p>
+                            </div>
+                            <div class="pane-actions">
+                                <button class="btn btn-secondary-outline" id="btn-new-transfer-tab">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                                    Transferir
+                                </button>
+                                <button class="btn btn-primary" id="btn-add-account-tab">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    Nova Conta
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="accounts-full-grid" id="accounts-full-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: CARTÕES -->
+                    <div class="subtab-pane" id="cards-tab">
+                        <div class="pane-header">
+                            <div>
+                                <h2>Cartões de Crédito & Faturas</h2>
+                                <p class="pane-subtitle">Acompanhe limites, datas de fechamento/vencimento e pague faturas.</p>
+                            </div>
+                            <div class="pane-actions">
+                                <button class="btn btn-primary" id="btn-add-card-tab">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                    Novo Cartão
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="cards-full-grid" id="cards-full-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- 3. TRANSACTIONS VIEW (Mobills Inspired Design) -->
+            <div class="view-container" id="transactions-view">
+                
+                <!-- Page Top Header (Title, Filter Dropdown Pill, and Action Buttons) -->
+                <div class="trans-page-header">
+                    <div class="trans-header-left">
+                        <h2 class="trans-main-title">Transações</h2>
+                        
+                        <!-- Dropdown Filter Pill -->
+                        <div class="trans-filter-dropdown-wrap">
+                            <button class="btn-trans-filter-pill filter-income" id="btn-trans-filter-pill" type="button">
+                                <svg class="pill-icon-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                <span id="trans-filter-pill-label">Receitas</span>
+                            </button>
+                            <div class="trans-filter-menu" id="trans-filter-menu">
+                                <div class="trans-filter-item" data-filter="income">
+                                    <span class="dot-indicator dot-green"></span>
+                                    <span>Receitas</span>
+                                </div>
+                                <div class="trans-filter-item" data-filter="expense">
+                                    <span class="dot-indicator dot-red"></span>
+                                    <span>Despesas</span>
+                                </div>
+                                <div class="trans-filter-item" data-filter="all">
+                                    <span class="dot-indicator dot-purple"></span>
+                                    <span>Todas as Transações</span>
+                                </div>
+                                <div class="trans-filter-item" data-filter="transfer">
+                                    <span class="dot-indicator dot-blue"></span>
+                                    <span>Transferências</span>
+                                </div>
+                                <div class="trans-filter-item" data-filter="account-expense">
+                                    <span class="dot-indicator dot-orange"></span>
+                                    <span>Despesas (Conta)</span>
+                                </div>
+                                <div class="trans-filter-item" data-filter="card-expense">
+                                    <span class="dot-indicator dot-teal"></span>
+                                    <span>Cartão de Crédito</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="trans-header-actions">
+                        <button class="btn-trans-action-add" id="btn-trans-new-action" type="button">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span id="trans-add-btn-text">NOVA RECEITA</span>
+                        </button>
+                        
+                        <!-- Search Box Quick Expand / Input -->
+                        <div class="trans-search-wrap">
+                            <input type="text" id="search-input" placeholder="Buscar lançamentos..." autocomplete="off" class="trans-search-input">
+                            <button class="btn-icon-circle" id="btn-trans-search-toggle" title="Buscar">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Account / Card Filter Select -->
+                        <div class="select-filter-group">
+                            <select id="filter-account-card" class="modern-select">
+                                <option value="all">Todas as Contas & Cartões</option>
+                            </select>
+                        </div>
+
+                        <button class="btn-icon-circle" id="btn-trans-kebab" title="Mais opções">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="5" r="1"></circle>
+                                <circle cx="12" cy="12" r="1"></circle>
+                                <circle cx="12" cy="19" r="1"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3 Summary Metrics Cards (Exact Mobills Design from Image 2) -->
+                <div class="trans-summary-cards-grid">
+                    <!-- 1. Card Pendentes -->
+                    <div class="trans-summary-card" id="trans-card-pending">
+                        <div class="trans-sum-icon-circle circle-green" id="trans-icon-pending">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="19" x2="12" y2="5"></line>
+                                <polyline points="5 12 12 5 19 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="trans-sum-info">
+                            <div class="trans-sum-title-row">
+                                <span class="trans-sum-title" id="trans-title-pending">Receitas pendentes</span>
+                                <svg class="trans-sum-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                            <div class="trans-sum-value" id="trans-val-pending">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Card Recebidas / Pagas -->
+                    <div class="trans-summary-card" id="trans-card-realized">
+                        <div class="trans-sum-icon-circle circle-green" id="trans-icon-realized">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <polyline points="19 12 12 19 5 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="trans-sum-info">
+                            <div class="trans-sum-title-row">
+                                <span class="trans-sum-title" id="trans-title-realized">Receitas recebidas</span>
+                                <svg class="trans-sum-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                            <div class="trans-sum-value" id="trans-val-realized">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Card Total -->
+                    <div class="trans-summary-card" id="trans-card-total">
+                        <div class="trans-sum-icon-circle circle-green" id="trans-icon-total">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="3" x2="12" y2="21"></line>
+                                <path d="M17 7l-5-4-5 4"></path>
+                                <path d="M6 18h12"></path>
+                            </svg>
+                        </div>
+                        <div class="trans-sum-info">
+                            <div class="trans-sum-title-row">
+                                <span class="trans-sum-title" id="trans-title-total">Total</span>
+                                <svg class="trans-sum-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                            <div class="trans-sum-value" id="trans-val-total">R$ 0,00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Transactions Table Container with Month Bar -->
+                <div class="trans-table-card">
+                    <!-- Month Bar inside Table Card -->
+                    <div class="trans-month-bar">
+                        <button class="btn-month-nav" id="btn-trans-prev-month" title="Mês anterior">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="15 18 9 12 15 6"></polyline>
+                            </svg>
+                        </button>
+                        <div class="trans-month-pill" id="trans-month-pill" title="Alterar mês">
+                            <span id="trans-month-label">Setembro 2026</span>
+                        </div>
+                        <button class="btn-month-nav" id="btn-trans-next-month" title="Próximo mês">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table class="transactions-table mobills-style-table">
+                            <thead>
+                                <tr>
+                                    <th class="th-check"><input type="checkbox" id="trans-select-all" title="Selecionar todos"></th>
+                                    <th>Situação</th>
+                                    <th>Data &darr;</th>
+                                    <th>Descrição</th>
+                                    <th>Categoria</th>
+                                    <th>Conta / Cartão</th>
+                                    <th class="text-right">Valor</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-list">
+                                <!-- Populated dynamically by JavaScript -->
+                            </tbody>
+                        </table>
+                        
+                        <!-- Mobills Empty State -->
+                        <div class="empty-state mobills-empty-state" id="empty-state">
+                            <div class="empty-illustration">
+                                <svg width="100" height="100" viewBox="0 0 120 120" fill="none">
+                                    <rect x="25" y="80" width="16" height="24" rx="3" fill="#8b5cf6" />
+                                    <rect x="45" y="65" width="16" height="39" rx="3" fill="#6d28d9" />
+                                    <rect x="65" y="50" width="16" height="54" rx="3" fill="#5b21b6" />
+                                    <!-- Person figure with binoculars -->
+                                    <circle cx="75" cy="30" r="7" fill="#f59e0b" />
+                                    <path d="M72 37c-3 4-4 12-4 18h16c0-6-1-14-4-18z" fill="#10b981" />
+                                    <path d="M68 55l4 18h4l-2-18h-6z" fill="#0284c7" />
+                                    <path d="M78 55l2 18h4l-4-18h-2z" fill="#0284c7" />
+                                    <!-- Binoculars -->
+                                    <rect x="65" y="27" width="12" height="6" rx="2" fill="#1e293b" />
+                                    <line x1="63" y1="27" x2="60" y2="25" stroke="#1e293b" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                            </div>
+                            <p class="empty-title">Nenhum resultado</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- 4. DISTRIBUTION VIEW (Image 3 Inspiration) -->
+            <div class="view-container" id="distribution-view">
+                <section class="distribution-section">
+                    <!-- Distribution Header with Pill Filter (Image 3) -->
+                    <div class="dist-pill-filter-bar">
+                        <button class="dist-pill active" id="pill-dist-expenses">Despesas por categoria</button>
+                        <button class="dist-pill" id="pill-dist-incomes">Receitas por categoria</button>
+                    </div>
+
+                    <div class="chart-card donut-chart-expanded">
+                        <div class="chart-card-header">
+                            <h3 id="dist-chart-title">Despesas por Categoria</h3>
+                            <span class="chart-subtitle">Detalhamento dos gastos consolidados</span>
+                        </div>
+                        <div class="donut-content-wrapper">
+                            <div class="chart-wrapper-expanded">
+                                <canvas id="categoryChart"></canvas>
+                                <!-- Central Total for Expanded View -->
+                                <div class="donut-center-total" id="donut-center-total-exp">
+                                    <span class="center-label">Total</span>
+                                    <span class="center-amount" id="donut-center-amount-exp">R$ 0,00</span>
+                                </div>
+                            </div>
+                            <div class="donut-legend-expanded" id="donut-legend">
+                                <!-- Populated by JavaScript with circular colored badges -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR (Image 1 & Image 3 Inspiration) -->
+    <nav class="mobile-bottom-nav">
+        <button class="bottom-nav-item active" id="mob-nav-dashboard">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+            <span>Principal</span>
+        </button>
+        <button class="bottom-nav-item" id="mob-nav-transactions">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            <span>Transações</span>
+        </button>
+        
+        <!-- Elevated Floating Center Add Button (+) -->
+        <button class="mobile-center-add-btn" id="mob-btn-add" title="Novo Lançamento">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+        </button>
+
+        <button class="bottom-nav-item" id="mob-nav-accounts">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+            <span>Contas</span>
+        </button>
+        <button class="bottom-nav-item" id="mob-nav-categories">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+            <span>Gráficos</span>
+        </button>
+    </nav>
+
+    <!-- MODAL 1: NOVO/EDITAR LANÇAMENTO (TRANSACTION MODAL) -->
+    <div class="modal-overlay" id="transaction-modal">
+        <div class="modal-content modal-content-lg">
+            <div class="modal-header">
+                <h3 id="modal-title">Novo Lançamento</h3>
+                <button class="close-btn" id="btn-close-modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <form id="transaction-form" class="modal-body">
+                <input type="hidden" id="edit-tx-id">
+                
+                <div class="form-group">
+                    <label>Tipo de Operação</label>
+                    <div class="radio-toggle-triple">
+                        <input type="radio" id="type-income" name="tx-operation-type" value="income" checked>
+                        <label for="type-income" class="radio-tab tab-income">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+                            Receita (Entrada)
+                        </label>
+                        
+                        <input type="radio" id="type-expense" name="tx-operation-type" value="expense">
+                        <label for="type-expense" class="radio-tab tab-expense">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                            Despesa (Saída)
+                        </label>
+                        
+                        <input type="radio" id="type-transfer" name="tx-operation-type" value="transfer">
+                        <label for="type-transfer" class="radio-tab tab-transfer">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 23l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg>
+                            Transferência
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="payment-method-group" style="display: none;">
+                    <label>Forma de Pagamento</label>
+                    <div class="radio-toggle">
+                        <input type="radio" id="method-account" name="payment-method" value="account" checked>
+                        <label for="method-account" class="radio-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11"></path></svg>
+                            Conta Bancária (Débito / Pix)
+                        </label>
+                        
+                        <input type="radio" id="method-card" name="payment-method" value="card">
+                        <label for="method-card" class="radio-label">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                            Cartão de Crédito (Fatura)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="account-select-group">
+                    <label for="tx-account-select" id="account-select-label">Conta de Destino</label>
+                    <select id="tx-account-select" class="form-select"></select>
+                </div>
+
+                <div class="form-group" id="card-select-group" style="display: none;">
+                    <label for="tx-card-select">Cartão de Crédito</label>
+                    <select id="tx-card-select" class="form-select"></select>
+                </div>
+
+                <div class="form-row" id="transfer-accounts-group" style="display: none;">
+                    <div class="form-group">
+                        <label for="tx-transfer-from">Conta de Origem (Sai)</label>
+                        <select id="tx-transfer-from" class="form-select"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tx-transfer-to">Conta de Destino (Entra)</label>
+                        <select id="tx-transfer-to" class="form-select"></select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="desc">Descrição</label>
+                    <input type="text" id="desc" placeholder="Ex: Salário, Supermercado, Almoço..." required autocomplete="off">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="val">Valor (R$)</label>
+                        <input type="number" id="val" step="0.01" min="0.01" placeholder="0,00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Data da Transação</label>
+                        <input type="date" id="date" required>
+                    </div>
+                </div>
+
+                <div class="form-group" id="installments-group" style="display: none;">
+                    <label for="tx-installments">Parcelamento</label>
+                    <select id="tx-installments" class="form-select">
+                        <option value="1">À vista (1x)</option>
+                        <option value="2">2x parcelas</option>
+                        <option value="3">3x parcelas</option>
+                        <option value="4">4x parcelas</option>
+                        <option value="5">5x parcelas</option>
+                        <option value="6">6x parcelas</option>
+                        <option value="10">10x parcelas</option>
+                        <option value="12">12x parcelas</option>
+                    </select>
+                </div>
+
+                <div class="form-row" id="category-row-group">
+                    <div class="form-group">
+                        <label for="category">Categoria</label>
+                        <select id="category" class="form-select">
+                            <option value="food">🍽️ Alimentação & Restaurante</option>
+                            <option value="housing">🏠 Moradia & Contas</option>
+                            <option value="transport">🚗 Transporte & Combustível</option>
+                            <option value="entertainment">🎉 Lazer & Entretenimento</option>
+                            <option value="health">💊 Saúde & Farmácia</option>
+                            <option value="education">📚 Educação & Cursos</option>
+                            <option value="services">⚡ Serviços & Assinaturas</option>
+                            <option value="salary">💼 Salário / Renda</option>
+                            <option value="investment">📈 Investimentos</option>
+                            <option value="others" selected>📦 Outros / Diversos</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="expense-nature-group" style="display: none;">
+                        <label for="expense-nature">Classificação</label>
+                        <select id="expense-nature" class="form-select">
+                            <option value="variable" selected>Despesa Variável</option>
+                            <option value="fixed">Despesa Fixa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-submit">Confirmar Lançamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: GESTÃO DE CONTA BANCÁRIA -->
+    <div class="modal-overlay" id="account-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="account-modal-title">Nova Conta Bancária</h3>
+                <button class="close-btn" id="btn-close-account-modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="account-form" class="modal-body">
+                <input type="hidden" id="edit-account-id">
+                
+                <div class="form-group">
+                    <label for="account-name">Nome da Conta / Banco</label>
+                    <input type="text" id="account-name" placeholder="Ex: Nubank, Banco Inter, Carteira..." required autocomplete="off">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="account-institution">Instituição</label>
+                        <select id="account-institution" class="form-select">
+                            <option value="nubank">Nubank</option>
+                            <option value="inter">Banco Inter</option>
+                            <option value="itau">Itaú</option>
+                            <option value="bradesco">Bradesco</option>
+                            <option value="santander">Santander</option>
+                            <option value="caixa">Caixa Econômica</option>
+                            <option value="carteira">Carteira (Dinheiro Físico)</option>
+                            <option value="outros">Outro Banco / Carteira</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="account-type">Tipo de Conta</label>
+                        <select id="account-type" class="form-select">
+                            <option value="checking">Conta Corrente</option>
+                            <option value="savings">Poupança</option>
+                            <option value="wallet">Carteira / Dinheiro</option>
+                            <option value="investment">Investimentos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="account-balance">Saldo Inicial (R$)</label>
+                    <input type="number" id="account-balance" step="0.01" placeholder="0,00" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor de Destaque da Conta</label>
+                    <div class="color-presets-row" id="account-color-presets">
+                        <span class="color-circle active" data-color="#820ad1" style="background-color: #820ad1;" title="Roxo Nubank"></span>
+                        <span class="color-circle" data-color="#ff7a00" style="background-color: #ff7a00;" title="Laranja Inter"></span>
+                        <span class="color-circle" data-color="#004990" style="background-color: #004990;" title="Azul Itaú"></span>
+                        <span class="color-circle" data-color="#cc092f" style="background-color: #cc092f;" title="Vermelho Bradesco"></span>
+                        <span class="color-circle" data-color="#10b981" style="background-color: #10b981;" title="Verde Dinheiro"></span>
+                        <span class="color-circle" data-color="#3b82f6" style="background-color: #3b82f6;" title="Azul Royal"></span>
+                    </div>
+                    <input type="hidden" id="account-color-value" value="#820ad1">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-account-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-submit">Salvar Conta</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: GESTÃO DE CARTÃO DE CRÉDITO -->
+    <div class="modal-overlay" id="card-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="card-modal-title">Novo Cartão de Crédito</h3>
+                <button class="close-btn" id="btn-close-card-modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="card-form" class="modal-body">
+                <input type="hidden" id="edit-card-id">
+                
+                <div class="form-group">
+                    <label for="card-name">Nome do Banco / Cartão</label>
+                    <input type="text" id="card-name" placeholder="Ex: Nubank, Inter, C6 Bank, Itaú..." required autocomplete="off">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-brand">Bandeira</label>
+                        <select id="card-brand" class="form-select">
+                            <option value="mastercard">Mastercard</option>
+                            <option value="visa">Visa</option>
+                            <option value="elo">Elo</option>
+                            <option value="amex">American Express</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-digits">Últimos 4 dígitos <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">(Opcional)</span></label>
+                        <input type="text" id="card-digits" maxlength="4" placeholder="Ex: 8492">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="card-limit">Limite Total de Crédito (R$)</label>
+                    <input type="number" id="card-limit" step="0.01" min="1" placeholder="Ex: 5000,00" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="card-closing-day">Dia de Fechamento da Fatura</label>
+                        <input type="number" id="card-closing-day" min="1" max="31" placeholder="Ex: 25" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="card-due-day">Dia de Vencimento da Fatura</label>
+                        <input type="number" id="card-due-day" min="1" max="31" placeholder="Ex: 2" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Cor do Cartão</label>
+                    <div class="card-style-presets" id="card-style-presets">
+                        <div class="card-preset active" data-style="purple-dark" style="background-color: #820ad1;" title="Nubank (Roxo)"></div>
+                        <div class="card-preset" data-style="inter-black" style="background-color: #ff7a00;" title="Inter (Laranja)"></div>
+                        <div class="card-preset" data-style="midnight-blue" style="background-color: #1e40af;" title="Azul"></div>
+                        <div class="card-preset" data-style="emerald-luxury" style="background-color: #059669;" title="Verde"></div>
+                        <div class="card-preset" data-style="obsidian-gold" style="background-color: #18181b;" title="Preto"></div>
+                    </div>
+                    <input type="hidden" id="card-style-value" value="purple-dark">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-card-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-submit">Salvar Cartão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: PAGAR FATURA DO CARTÃO -->
+    <div class="modal-overlay" id="pay-invoice-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Pagar Fatura de Cartão</h3>
+                <button class="close-btn" id="btn-close-invoice-modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="pay-invoice-form" class="modal-body">
+                <input type="hidden" id="pay-invoice-card-id">
+                
+                <div class="invoice-summary-box">
+                    <div class="invoice-sum-header">
+                        <span id="pay-invoice-card-name">Cartão de Crédito</span>
+                        <span class="badge badge-card" id="pay-invoice-period">Fatura Julho/2026</span>
+                    </div>
+                    <div class="invoice-sum-amount">
+                        <span class="sum-label">Valor Total da Fatura:</span>
+                        <span class="sum-value" id="pay-invoice-amount">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="pay-invoice-account">Pagar utilizando a conta:</label>
+                    <select id="pay-invoice-account" class="form-select" required></select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="pay-invoice-value">Valor a Pagar (R$)</label>
+                        <input type="number" id="pay-invoice-value" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pay-invoice-date">Data do Pagamento</label>
+                        <input type="date" id="pay-invoice-date" required>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-invoice-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-submit btn-green">Confirmar Pagamento</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: TRANSFERÊNCIA RÁPIDA ENTRE CONTAS -->
+    <div class="modal-overlay" id="transfer-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Transferir entre Contas</h3>
+                <button class="close-btn" id="btn-close-transfer-modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="transfer-form" class="modal-body">
+                <div class="form-group">
+                    <label for="transfer-from-select">Conta de Origem (Sai o valor)</label>
+                    <select id="transfer-from-select" class="form-select" required></select>
+                </div>
+
+                <div class="form-group">
+                    <label for="transfer-to-select">Conta de Destino (Recebe o valor)</label>
+                    <select id="transfer-to-select" class="form-select" required></select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="transfer-amount">Valor (R$)</label>
+                        <input type="number" id="transfer-amount" step="0.01" min="0.01" placeholder="0,00" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="transfer-date">Data</label>
+                        <input type="date" id="transfer-date" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="transfer-desc">Descrição / Motivo</label>
+                    <input type="text" id="transfer-desc" placeholder="Ex: Ajuste de saldo, Envio para reserva..." autocomplete="off">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-transfer-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-submit">Efetuar Transferência</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 6: COFRINHO / METAS (PRESERVADO COM REGRAS DO PROJETO) -->
+    <div class="modal-overlay" id="goal-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="goal-modal-title">Nova Meta de Poupança</h3>
+                <button class="close-btn" id="btn-close-goal-modal">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="goal-form" class="modal-body">
+                <input type="hidden" id="goal-id-input">
+                <input type="hidden" id="goal-action-input">
+                
+                <div id="goal-add-fields">
+                    <div class="form-group">
+                        <label for="goal-name">Nome da Meta</label>
+                        <input type="text" id="goal-name" placeholder="Ex: Reserva de Emergência, Viagem..." autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="goal-target">Valor Alvo (R$)</label>
+                        <input type="number" id="goal-target" step="0.01" min="0.01" placeholder="0,00">
+                    </div>
+                </div>
+
+                <div id="goal-value-fields" style="display: none;">
+                    <div class="form-group">
+                        <label id="goal-value-label" for="goal-value">Valor para Depositar (R$)</label>
+                        <input type="number" id="goal-value" step="0.01" min="0.01" placeholder="0,00">
+                    </div>
+                </div>
+
+                <div id="goal-delete-warning" style="display: none; text-align: center; margin-bottom: 20px; padding: 10px 0;">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 12px; filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.2));">
+                        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                    <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.4;">
+                        Tem certeza que deseja excluir a meta <strong id="delete-goal-name" style="color: var(--text-primary);">[Nome da Meta]</strong>?
+                    </p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 6px;">
+                        Esta ação removerá a meta permanentemente.
+                    </p>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-goal-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-submit" id="btn-submit-goal-modal">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="toast" id="toast">
+        <span id="toast-message">Mensagem</span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
