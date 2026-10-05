@@ -661,14 +661,14 @@ async function saveData(type, options = {}) {
         };
         updateCloudSyncUI();
 
-        // Se NÃO for silencioso, exibe o aviso específico
-        if (!options.silentError) {
+        // Só exibe toast se for explicitamente solicitado (ex: teste manual de conexão)
+        if (options.showToastOnError) {
             if (e.code === 'permission-denied') {
-                showToast("Dados salvos no dispositivo. (Nuvem com permissão pendente)");
+                showToast("Permissão negada no Firestore. Ajuste as regras no console.");
             } else if (e.code === 'unavailable') {
-                showToast("Dados salvos no dispositivo. (Nuvem offline)");
+                showToast("Nuvem temporariamente offline. Dados salvos localmente.");
             } else {
-                showToast("Dados salvos no dispositivo.");
+                showToast(`Aviso nuvem: ${e.code || 'sem conexão'}`);
             }
         }
     }
@@ -1471,10 +1471,14 @@ function getInitials(name) {
     return name.substring(0, 2).toUpperCase();
 }
 
+let toastTimeout = null;
 function showToast(message) {
+    if (toastTimeout) clearTimeout(toastTimeout);
     toastMessageEl.textContent = message;
     toastEl.classList.add('show');
-    setTimeout(() => toastEl.classList.remove('show'), 3200);
+    toastTimeout = setTimeout(() => {
+        toastEl.classList.remove('show');
+    }, 3200);
 }
 
 function formatCurrency(value) {
