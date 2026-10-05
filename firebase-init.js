@@ -13,6 +13,17 @@ firebase.initializeApp(firebaseConfig);
 window.auth = firebase.auth();
 window.db = firebase.firestore();
 
+// Habilita persistência offline para operações resilientes
+if (window.db && typeof window.db.enablePersistence === 'function') {
+    window.db.enablePersistence({ synchronizeTabs: true }).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn("Firestore: múltiplas abas abertas simultaneamente.");
+        } else if (err.code === 'unimplemented') {
+            console.warn("Firestore: este navegador não suporta persistência local.");
+        }
+    });
+}
+
 // Variável global para armazenar o usuário
 window.firebaseUser = null;
 

@@ -530,7 +530,73 @@ async function loadData() {
     }
 }
 
-async function saveData(type) {
+window.cloudSyncStatus = { ok: true, code: null, message: 'Inicializado' };
+
+function updateCloudSyncUI() {
+    const badgeEl = document.getElementById('cloud-sync-badge');
+    const descEl = document.getElementById('cloud-sync-desc');
+    if (!badgeEl || !descEl) return;
+
+    if (!window.firebaseUser) {
+        badgeEl.textContent = 'Modo Local';
+        badgeEl.style.background = '#f1f5f9';
+        badgeEl.style.color = '#64748b';
+        descEl.textContent = 'Dados salvos localmente no seu dispositivo.';
+        return;
+    }
+
+    if (window.cloudSyncStatus.ok) {
+        badgeEl.textContent = '🟢 Nuvem Ativa';
+        badgeEl.style.background = '#dcfce7';
+        badgeEl.style.color = '#15803d';
+        descEl.textContent = 'Seus cartões e lançamentos estão salvos localmente e sincronizados com a nuvem Firebase.';
+    } else {
+        const code = window.cloudSyncStatus.code || '';
+        if (code === 'permission-denied') {
+            badgeEl.textContent = '🟡 Salvo Localmente';
+            badgeEl.style.background = '#fef3c7';
+            badgeEl.style.color = '#b45309';
+            descEl.textContent = 'Cartões salvos com segurança no seu navegador. Para ativar o espelho na nuvem, permita a gravação no console do Firestore.';
+        } else if (code === 'unavailable') {
+            badgeEl.textContent = '🟡 Modo Offline';
+            badgeEl.style.background = '#fef3c7';
+            badgeEl.style.color = '#b45309';
+            descEl.textContent = 'Sem conexão com a nuvem no momento. Seus dados continuam salvos no navegador.';
+        } else {
+            badgeEl.textContent = '🟡 Salvo Localmente';
+            badgeEl.style.background = '#fef3c7';
+            badgeEl.style.color = '#b45309';
+            descEl.textContent = 'Seus dados estão protegidos no seu navegador. Sincronização em nuvem pendente.';
+        }
+    }
+}
+
+async function testCloudSync() {
+    if (!window.db || !window.firebaseUser) {
+        showToast('Nenhum usuário autenticado no Firebase.');
+        return;
+    }
+    showToast('Testando conexão com a nuvem...');
+    try {
+        await window.db.collection('users_data').doc(window.firebaseUser.uid).set({
+            last_sync_test: new Date().toISOString()
+        }, { merge: true });
+        window.cloudSyncStatus = { ok: true, code: null, message: 'Conectado com sucesso' };
+        updateCloudSyncUI();
+        showToast('Nuvem conectada e sincronizada com sucesso!');
+    } catch (e) {
+        console.warn('Erro ao testar nuvem:', e);
+        window.cloudSyncStatus = { ok: false, code: e.code || 'unknown', message: e.message || String(e) };
+        updateCloudSyncUI();
+        if (e.code === 'permission-denied') {
+            showToast('Permissão negada no Firestore (verifique firestore.rules no Console).');
+        } else {
+            showToast(`Falha na nuvem: ${e.code || 'sem conexão'}`);
+        }
+    }
+}
+
+async function saveData(type, options = {}) {
     // 1. Sempre salva localmente primeiro para máxima segurança e persistência instantânea
     try {
         if (!type || type === 'accounts') localStorage.setItem(`finpurple_accounts_user_${activeUserId}`, JSON.stringify(accounts));
@@ -583,11 +649,31 @@ async function saveData(type) {
         // Garante que nenhum valor undefined seja enviado para o Firestore
         const cleanObj = JSON.parse(JSON.stringify(updateObj));
         await window.db.collection('users_data').doc(window.firebaseUser.uid).set(cleanObj, { merge: true });
+        
+        window.cloudSyncStatus = { ok: true, code: null, message: 'Sincronizado' };
+        updateCloudSyncUI();
     } catch (e) {
-        console.error("Erro ao salvar dados no Firebase:", e);
-        showToast("Erro ao sincronizar na nuvem.");
+        console.warn("Aviso de sincronização Firebase:", e);
+        window.cloudSyncStatus = { 
+            ok: false, 
+            code: e.code || 'unknown', 
+            message: e.message || String(e) 
+        };
+        updateCloudSyncUI();
+
+        // Se NÃO for silencioso, exibe o aviso específico
+        if (!options.silentError) {
+            if (e.code === 'permission-denied') {
+                showToast("Dados salvos no dispositivo. (Nuvem com permissão pendente)");
+            } else if (e.code === 'unavailable') {
+                showToast("Dados salvos no dispositivo. (Nuvem offline)");
+            } else {
+                showToast("Dados salvos no dispositivo.");
+            }
+        }
     }
 }
+
 
 // ==========================================================================
 // 5. Calculations & Helpers
@@ -852,7 +938,15 @@ function initEventListeners() {
             if (headerProfileWrap) headerProfileWrap.classList.remove('open');
             const currentUser = users.find(u => u.id === activeUserId) || { name: 'Allan Nunes' };
             if (profileNameInput) profileNameInput.value = currentUser.name;
+            updateCloudSyncUI();
             if (profileModal) profileModal.classList.add('open');
+        });
+    }
+
+    const btnTestCloudSync = document.getElementById('btn-test-cloud-sync');
+    if (btnTestCloudSync) {
+        btnTestCloudSync.addEventListener('click', () => {
+            testCloudSync();
         });
     }
 
@@ -2665,10 +2759,10 @@ function openCardModal(id = '') {
             if (!card) return;
             if (confirm(`Deseja realmente excluir o cartão "${card.name}"?`)) {
                 cards = cards.filter(c => c.id !== id);
-                await saveData('cards');
                 closeCardModal();
                 updateDashboard();
                 showToast(`Cartão "${card.name}" excluído.`);
+                await saveData('cards', { silentError: true });
             }
         };
     }
@@ -2735,7 +2829,6 @@ async function handleCardSubmit(e) {
             card.closingDay = closingDay;
             card.dueDay = dueDay;
             card.style = style;
-            showToast(`Cartão "${name}" atualizado!`);
         }
     } else {
         const newCard = {
@@ -2749,12 +2842,12 @@ async function handleCardSubmit(e) {
             style
         };
         cards.push(newCard);
-        showToast(`Cartão "${name}" criado com sucesso!`);
     }
 
-    await saveData('cards');
     closeCardModal();
     updateDashboard();
+    showToast(editId ? `Cartão "${name}" atualizado!` : `Cartão "${name}" criado com sucesso!`);
+    await saveData('cards', { silentError: true });
 }
 
 // ==========================================================================

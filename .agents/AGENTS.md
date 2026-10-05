@@ -47,3 +47,9 @@
 - **Correção da Criação e Sincronização de Cartões na Nuvem**:
   - Tratamento e sanitização rigorosa de todos os campos de cartões e contas antes do envio ao Firestore (`style`, `digits`, `brand`, etc.), eliminando valores `undefined` que disparavam o erro `Unsupported field value: undefined` do SDK Firebase.
   - Adicionado suporte a espelho local em `localStorage` para tolerância a falhas offline e botão de exclusão de cartão diretamente pelo modal de edição.
+  - **Sincronização em Nuvem Resiliente e Desacoplada**:
+    - A criação/edição/exclusão de cartões confirma o sucesso local imediatamente (`showToast`), desacoplando o feedback do usuário de oscilações ou regras de segurança remotas do Firebase.
+    - Ativada a persistência offline nativa do Firestore via `enablePersistence({ synchronizeTabs: true })`.
+    - Adicionado card de diagnóstico "Sincronização em Nuvem" dentro do modal de perfil com o botão "Testar Sincronização Agora".
+    - Adicionado arquivo oficial `firestore.rules` com a regra de permissão para `users_data/{userId}`.
+
