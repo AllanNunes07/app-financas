@@ -448,9 +448,14 @@ async function loadData() {
         if (savedData && savedData.users) {
             users = savedData.users;
             activeUserId = savedData.activeUserId || '1';
+            // Atualiza "Usuário 1" para "Allan Nunes" caso ainda esteja com o nome padrão
+            if (users[0] && (users[0].name === 'Usuário 1' || !users[0].name)) {
+                users[0].name = 'Allan Nunes';
+                await saveData('users');
+            }
         } else {
             users = [
-                { id: '1', name: 'Usuário 1' },
+                { id: '1', name: 'Allan Nunes' },
                 { id: '2', name: 'Usuário 2' }
             ];
             activeUserId = '1';
@@ -526,23 +531,60 @@ async function loadData() {
 }
 
 async function saveData(type) {
+    // 1. Sempre salva localmente primeiro para máxima segurança e persistência instantânea
+    try {
+        if (!type || type === 'accounts') localStorage.setItem(`finpurple_accounts_user_${activeUserId}`, JSON.stringify(accounts));
+        if (!type || type === 'cards') localStorage.setItem(`finpurple_cards_user_${activeUserId}`, JSON.stringify(cards));
+        if (!type || type === 'transactions') localStorage.setItem(`finpurple_transactions_user_${activeUserId}`, JSON.stringify(transactions));
+        if (!type || type === 'invoices') localStorage.setItem(`finpurple_invoices_user_${activeUserId}`, JSON.stringify(paidInvoices));
+        if (!type || type === 'goals') localStorage.setItem(`finpurple_goals_user_${activeUserId}`, JSON.stringify(goals));
+        if (type === 'users') {
+            localStorage.setItem('finpurple_users', JSON.stringify(users));
+            localStorage.setItem('finpurple_active_user_id', activeUserId);
+        }
+    } catch (err) {
+        console.warn("Erro ao salvar no localStorage", err);
+    }
+
     if (!window.db || !window.firebaseUser) return;
     
     try {
         const updateObj = {};
-        if (!type || type === 'accounts') updateObj[`accounts_user_${activeUserId}`] = accounts;
-        if (!type || type === 'cards') updateObj[`cards_user_${activeUserId}`] = cards;
-        if (!type || type === 'transactions') updateObj[`transactions_user_${activeUserId}`] = transactions;
-        if (!type || type === 'invoices') updateObj[`invoices_user_${activeUserId}`] = paidInvoices;
-        if (!type || type === 'goals') updateObj[`goals_user_${activeUserId}`] = goals;
+        if (!type || type === 'accounts') {
+            updateObj[`accounts_user_${activeUserId}`] = (accounts || []).map(a => ({
+                id: String(a.id || ''),
+                name: String(a.name || ''),
+                institution: String(a.institution || 'carteira'),
+                type: String(a.type || 'checking'),
+                balance: Number(a.balance) || 0,
+                color: String(a.color || '#820ad1')
+            }));
+        }
+        if (!type || type === 'cards') {
+            updateObj[`cards_user_${activeUserId}`] = (cards || []).map(c => ({
+                id: String(c.id || `card-${Date.now()}`),
+                name: String(c.name || 'Cartão'),
+                brand: String(c.brand || 'mastercard'),
+                digits: String(c.digits || ''),
+                limit: Number(c.limit) || 0,
+                closingDay: Number(c.closingDay) || 25,
+                dueDay: Number(c.dueDay) || 2,
+                style: String(c.style || 'purple-dark')
+            }));
+        }
+        if (!type || type === 'transactions') updateObj[`transactions_user_${activeUserId}`] = transactions || [];
+        if (!type || type === 'invoices') updateObj[`invoices_user_${activeUserId}`] = paidInvoices || [];
+        if (!type || type === 'goals') updateObj[`goals_user_${activeUserId}`] = goals || [];
         if (type === 'users') {
-            updateObj.users = users;
+            updateObj.users = (users || []).map(u => ({ id: String(u.id), name: String(u.name) }));
             updateObj.activeUserId = activeUserId;
         }
 
-        await window.db.collection('users_data').doc(window.firebaseUser.uid).set(updateObj, { merge: true });
+        // Garante que nenhum valor undefined seja enviado para o Firestore
+        const cleanObj = JSON.parse(JSON.stringify(updateObj));
+        await window.db.collection('users_data').doc(window.firebaseUser.uid).set(cleanObj, { merge: true });
     } catch (e) {
-        console.error("Erro ao salvar dados no Firebase", e);
+        console.error("Erro ao salvar dados no Firebase:", e);
         showToast("Erro ao sincronizar na nuvem.");
     }
 }
@@ -680,18 +722,34 @@ function initEventListeners() {
     });
 
     // 5. Month Selector Buttons & Popover Dropdown (Main Header)
-    btnPrevMonth.addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentActiveDate.setMonth(currentActiveDate.getMonth() - 1);
-        updateMonthSelectorUI();
-        updateDashboard();
-    });
-    btnNextMonth.addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentActiveDate.setMonth(currentActiveDate.getMonth() + 1);
-        updateMonthSelectorUI();
-        updateDashboard();
-    });
+    if (btnPrevMonth) {
+        btnPrevMonth.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentActiveDate.setMonth(currentActiveDate.getMonth() - 1);
+            updateMonthSelectorUI();
+            updateDashboard();
+        });
+    }
+    if (btnNextMonth) {
+        btnNextMonth.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentActiveDate.setMonth(currentActiveDate.getMonth() + 1);
+            updateMonthSelectorUI();
+            updateDashboard();
+        });
+    }
+
+    const monthSelectorPill = document.getElementById('month-selector-pill');
+    if (monthSelectorPill) {
+        monthSelectorPill.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (monthPickerPopover && monthPickerPopover.classList.contains('open')) {
+                closeMonthPicker();
+            } else {
+                openMonthPicker();
+            }
+        });
+    }
 
     if (btnMonthDropdown) {
         btnMonthDropdown.addEventListener('click', (e) => {
@@ -762,39 +820,140 @@ function initEventListeners() {
         });
     });
 
-    // 7. Edit User Name
+    // 7. Header User Profile Dropdown & Modal
+    const headerProfileWrap = document.getElementById('header-user-profile-wrap');
+    const btnHeaderProfile = document.getElementById('btn-header-profile');
+    const profileModal = document.getElementById('profile-modal');
+    const profileForm = document.getElementById('profile-form');
+    const profileNameInput = document.getElementById('profile-name-input');
+    const btnProfileMyAccount = document.getElementById('btn-profile-my-account');
+    const btnProfileSettings = document.getElementById('btn-profile-settings');
+    const btnProfileInvite = document.getElementById('btn-profile-invite');
+    const btnProfileBlog = document.getElementById('btn-profile-blog');
+    const btnProfileLogout = document.getElementById('btn-profile-logout');
+    const btnCloseProfileModal = document.getElementById('btn-close-profile-modal');
+    const btnCancelProfileModal = document.getElementById('btn-cancel-profile-modal');
+
+    if (btnHeaderProfile && headerProfileWrap) {
+        btnHeaderProfile.addEventListener('click', (e) => {
+            e.stopPropagation();
+            headerProfileWrap.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!headerProfileWrap.contains(e.target)) {
+                headerProfileWrap.classList.remove('open');
+            }
+        });
+    }
+
+    if (btnProfileMyAccount) {
+        btnProfileMyAccount.addEventListener('click', () => {
+            if (headerProfileWrap) headerProfileWrap.classList.remove('open');
+            const currentUser = users.find(u => u.id === activeUserId) || { name: 'Allan Nunes' };
+            if (profileNameInput) profileNameInput.value = currentUser.name;
+            if (profileModal) profileModal.classList.add('open');
+        });
+    }
+
+    if (btnCloseProfileModal) {
+        btnCloseProfileModal.addEventListener('click', () => {
+            if (profileModal) profileModal.classList.remove('open');
+        });
+    }
+
+    if (btnCancelProfileModal) {
+        btnCancelProfileModal.addEventListener('click', () => {
+            if (profileModal) profileModal.classList.remove('open');
+        });
+    }
+
+    if (profileForm) {
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newName = profileNameInput.value.trim();
+            if (!newName) return;
+            const currentUser = users.find(u => u.id === activeUserId);
+            if (currentUser) {
+                currentUser.name = newName;
+                updateUserProfileUI();
+                await saveData('users');
+                if (profileModal) profileModal.classList.remove('open');
+                showToast(`Perfil atualizado para "${newName}"!`);
+            }
+        });
+    }
+
+    if (btnProfileLogout) {
+        btnProfileLogout.addEventListener('click', () => {
+            if (window.auth) window.auth.signOut();
+        });
+    }
+
+    if (btnProfileSettings) {
+        btnProfileSettings.addEventListener('click', () => {
+            if (headerProfileWrap) headerProfileWrap.classList.remove('open');
+            const btnToggleTheme = document.getElementById('btn-toggle-theme');
+            if (btnToggleTheme) btnToggleTheme.click();
+        });
+    }
+
+    if (btnProfileInvite) {
+        btnProfileInvite.addEventListener('click', () => {
+            if (headerProfileWrap) headerProfileWrap.classList.remove('open');
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(window.location.href);
+                showToast("Link copiado para a área de transferência!");
+            } else {
+                showToast("Compartilhe: " + window.location.href);
+            }
+        });
+    }
+
+    if (btnProfileBlog) {
+        btnProfileBlog.addEventListener('click', () => {
+            if (headerProfileWrap) headerProfileWrap.classList.remove('open');
+            showToast("Blog do Nunes Finance em breve!");
+        });
+    }
+
+    // Fallback sidebar edit
     const btnEditName = document.getElementById('btn-edit-name');
     const btnSaveName = document.getElementById('btn-save-name');
     const editNameInput = document.getElementById('edit-name-input');
     const activeUserNameSpan = document.getElementById('active-user-name');
 
-    btnEditName.addEventListener('click', startNameEdit);
-    activeUserNameSpan.addEventListener('click', startNameEdit);
-    btnSaveName.addEventListener('click', saveNameEdit);
-    editNameInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') saveNameEdit();
-        else if (e.key === 'Escape') cancelNameEdit();
-    });
+    if (btnEditName && btnSaveName && editNameInput && activeUserNameSpan) {
+        btnEditName.addEventListener('click', startNameEdit);
+        activeUserNameSpan.addEventListener('click', startNameEdit);
+        btnSaveName.addEventListener('click', saveNameEdit);
+        editNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveNameEdit();
+            else if (e.key === 'Escape') cancelNameEdit();
+        });
 
-    function startNameEdit() {
-        const currentUser = users.find(u => u.id === activeUserId);
-        editNameInput.value = currentUser.name;
-        document.querySelector('.name-edit-wrapper').classList.add('editing');
-        editNameInput.focus();
-        editNameInput.select();
-    }
-    function saveNameEdit() {
-        const newName = editNameInput.value.trim();
-        if (!newName) { cancelNameEdit(); return; }
-        const currentUser = users.find(u => u.id === activeUserId);
-        currentUser.name = newName;
-        localStorage.setItem('finpurple_users', JSON.stringify(users));
-        cancelNameEdit();
-        updateUserProfileUI();
-        showToast(`Nome alterado para "${newName}"`);
-    }
-    function cancelNameEdit() {
-        document.querySelector('.name-edit-wrapper').classList.remove('editing');
+        function startNameEdit() {
+            const currentUser = users.find(u => u.id === activeUserId);
+            editNameInput.value = currentUser.name;
+            const editWrapper = document.querySelector('.name-edit-wrapper');
+            if (editWrapper) editWrapper.classList.add('editing');
+            editNameInput.focus();
+            editNameInput.select();
+        }
+        async function saveNameEdit() {
+            const newName = editNameInput.value.trim();
+            if (!newName) { cancelNameEdit(); return; }
+            const currentUser = users.find(u => u.id === activeUserId);
+            currentUser.name = newName;
+            cancelNameEdit();
+            updateUserProfileUI();
+            await saveData('users');
+            showToast(`Nome alterado para "${newName}"`);
+        }
+        function cancelNameEdit() {
+            const editWrapper = document.querySelector('.name-edit-wrapper');
+            if (editWrapper) editWrapper.classList.remove('editing');
+        }
     }
 
     // 8. Invoice Tabs in Credit Cards Widget (Image 1 Mobile style)
@@ -1169,23 +1328,46 @@ function renderMonthPickerGrid() {
 }
 
 function updateUserProfileUI() {
+    const currentUser = users.find(u => u.id === activeUserId) || { name: 'Allan Nunes' };
+    const initial = (currentUser.name || 'A').trim().charAt(0).toUpperCase();
+
+    // 1. Header User Profile (Image 2 Mobills Style)
+    const headerUserName = document.getElementById('header-user-name');
+    const headerAvatarLetter = document.getElementById('header-avatar-letter');
+    if (headerUserName) headerUserName.textContent = currentUser.name;
+    if (headerAvatarLetter) headerAvatarLetter.textContent = initial;
+
+    // 2. Profile Modal Elements
+    const modalProfileTitle = document.getElementById('modal-profile-title');
+    const modalProfileEmail = document.getElementById('modal-profile-email');
+    const modalAvatarLetter = document.getElementById('modal-avatar-letter');
+    if (modalProfileTitle) modalProfileTitle.textContent = currentUser.name;
+    if (modalAvatarLetter) modalAvatarLetter.textContent = initial;
+    if (modalProfileEmail) {
+        modalProfileEmail.textContent = (window.firebaseUser && window.firebaseUser.email) ? window.firebaseUser.email : 'allannunesb17@hotmail.com';
+    }
+
+    // 3. Legacy sidebar fallback
+    const activeUserNameSpan = document.getElementById('active-user-name');
+    if (activeUserNameSpan) activeUserNameSpan.textContent = currentUser.name;
+
     const user1 = users.find(u => u.id === '1');
     const user2 = users.find(u => u.id === '2');
-
     const avatar1 = document.getElementById('avatar-user-1');
     const avatar2 = document.getElementById('avatar-user-2');
-    avatar1.textContent = getInitials(user1.name);
-    avatar2.textContent = getInitials(user2.name);
-    avatar1.title = user1.name;
-    avatar2.title = user2.name;
+    if (avatar1 && user1) {
+        avatar1.textContent = getInitials(user1.name);
+        avatar1.title = user1.name;
+    }
+    if (avatar2 && user2) {
+        avatar2.textContent = getInitials(user2.name);
+        avatar2.title = user2.name;
+    }
 
     document.querySelectorAll('.profile-avatar').forEach(avatar => {
         if (avatar.dataset.userId === activeUserId) avatar.classList.add('active');
         else avatar.classList.remove('active');
     });
-
-    const currentUser = users.find(u => u.id === activeUserId);
-    document.getElementById('active-user-name').textContent = currentUser.name;
 }
 
 function getInitials(name) {
@@ -2475,16 +2657,32 @@ function openCardModal(id = '') {
     cardModal.classList.add('open');
     editCardIdEl.value = id;
 
+    const btnDeleteCard = document.getElementById('btn-delete-card-modal');
+    if (btnDeleteCard) {
+        btnDeleteCard.style.display = id ? 'block' : 'none';
+        btnDeleteCard.onclick = async () => {
+            const card = cards.find(c => c.id === id);
+            if (!card) return;
+            if (confirm(`Deseja realmente excluir o cartão "${card.name}"?`)) {
+                cards = cards.filter(c => c.id !== id);
+                await saveData('cards');
+                closeCardModal();
+                updateDashboard();
+                showToast(`Cartão "${card.name}" excluído.`);
+            }
+        };
+    }
+
     if (id) {
         const card = cards.find(c => c.id === id);
         if (!card) return;
         cardModalTitleEl.textContent = `Editar Cartão "${card.name}"`;
-        document.getElementById('card-name').value = card.name;
+        document.getElementById('card-name').value = card.name || '';
         document.getElementById('card-brand').value = card.brand || 'mastercard';
         document.getElementById('card-digits').value = card.digits || '';
-        document.getElementById('card-limit').value = card.limit;
-        document.getElementById('card-closing-day').value = card.closingDay;
-        document.getElementById('card-due-day').value = card.dueDay;
+        document.getElementById('card-limit').value = card.limit || '';
+        document.getElementById('card-closing-day').value = card.closingDay || 25;
+        document.getElementById('card-due-day').value = card.dueDay || 2;
         document.getElementById('card-style-value').value = card.style || 'purple-dark';
 
         document.querySelectorAll('#card-style-presets .card-preset').forEach(c => {
@@ -2509,16 +2707,17 @@ function closeCardModal() {
     editCardIdEl.value = '';
 }
 
-function handleCardSubmit(e) {
+async function handleCardSubmit(e) {
     e.preventDefault();
 
     const name = document.getElementById('card-name').value.trim();
-    const brand = document.getElementById('card-brand').value;
+    const brand = document.getElementById('card-brand').value || 'mastercard';
     const digits = document.getElementById('card-digits').value.trim();
     const limit = parseFloat(document.getElementById('card-limit').value);
     const closingDay = parseInt(document.getElementById('card-closing-day').value, 10);
     const dueDay = parseInt(document.getElementById('card-due-day').value, 10);
-    const style = document.getElementById('card-style-value').value;
+    const styleInput = document.getElementById('card-style-value');
+    const style = (styleInput && styleInput.value && styleInput.value !== 'undefined') ? styleInput.value : 'purple-dark';
     const editId = editCardIdEl.value;
 
     if (!name || isNaN(limit) || limit <= 0 || isNaN(closingDay) || isNaN(dueDay)) {
@@ -2539,12 +2738,21 @@ function handleCardSubmit(e) {
             showToast(`Cartão "${name}" atualizado!`);
         }
     } else {
-        const newCard = { id: `card-${Date.now()}`, name, brand, digits, limit, closingDay, dueDay, style };
+        const newCard = {
+            id: `card-${Date.now()}`,
+            name,
+            brand,
+            digits: digits || '',
+            limit,
+            closingDay,
+            dueDay,
+            style
+        };
         cards.push(newCard);
         showToast(`Cartão "${name}" criado com sucesso!`);
     }
 
-    saveData('cards');
+    await saveData('cards');
     closeCardModal();
     updateDashboard();
 }

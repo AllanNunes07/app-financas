@@ -239,25 +239,15 @@
                     <p class="date-today" id="current-date">Hoje</p>
                 </div>
 
-                <!-- Month Selector Component (Pill with Popover) -->
+                <!-- Month Selector Component (Pill with Popover - Dropdown Only) -->
                 <div class="month-selector-container">
-                    <div class="month-selector" id="month-selector-pill">
-                        <button class="btn-month-nav" id="btn-prev-month" title="Mês anterior">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="15 18 9 12 15 6"></polyline>
-                            </svg>
-                        </button>
-                        <div class="month-dropdown-trigger" id="btn-month-dropdown" title="Abrir seleção de meses">
+                    <div class="month-selector month-selector-pill-only" id="month-selector-pill" title="Abrir seleção de meses">
+                        <div class="month-dropdown-trigger" id="btn-month-dropdown">
                             <span class="active-month-label" id="active-month-label">setembro</span>
-                            <svg class="month-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <svg class="month-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </div>
-                        <button class="btn-month-nav" id="btn-next-month" title="Próximo mês">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </button>
                     </div>
 
                     <!-- Month Picker Popover (Mobills Style) -->
@@ -335,6 +325,71 @@
                         </svg>
                         <span>Novo Lançamento</span>
                     </button>
+
+                    <!-- User Profile Dropdown Component (Image 2 style) -->
+                    <div class="header-user-profile-wrap" id="header-user-profile-wrap">
+                        <button type="button" class="header-user-profile-btn" id="btn-header-profile" aria-expanded="false" title="Menu do Usuário">
+                            <div class="header-avatar-circle">
+                                <span id="header-avatar-letter">A</span>
+                                <div class="avatar-crown-badge" title="Conta Premium">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="#000000">
+                                        <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <span class="header-user-name" id="header-user-name">Allan Nunes</span>
+                            <div class="header-user-chevron-circle">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                            </div>
+                        </button>
+
+                        <!-- User Profile Dropdown Menu (Image 2 style) -->
+                        <div class="header-profile-dropdown" id="header-profile-dropdown">
+                            <button type="button" class="profile-dropdown-item" id="btn-profile-my-account">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span>Meu perfil</span>
+                            </button>
+                            <button type="button" class="profile-dropdown-item" id="btn-profile-settings">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                </svg>
+                                <span>Configurações</span>
+                            </button>
+                            <button type="button" class="profile-dropdown-item" id="btn-profile-invite">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <span>Convidar amigos</span>
+                            </button>
+                            <button type="button" class="profile-dropdown-item" id="btn-profile-blog">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                    <polyline points="10 9 9 9 8 9"></polyline>
+                                </svg>
+                                <span>Blog</span>
+                            </button>
+                            <button type="button" class="profile-dropdown-item item-logout" id="btn-profile-logout">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                                </svg>
+                                <span>Sair</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </header>
 
@@ -1121,9 +1176,12 @@
                     <input type="hidden" id="card-style-value" value="purple-dark">
                 </div>
 
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="btn-cancel-card-modal">Cancelar</button>
-                    <button type="submit" class="btn btn-submit">Salvar Cartão</button>
+                <div class="modal-actions" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <button type="button" class="btn btn-danger-outline" id="btn-delete-card-modal" style="display: none; color: #ef4444; border: 1px solid rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); padding: 9px 16px; border-radius: 10px; font-weight: 600; cursor: pointer;">Excluir Cartão</button>
+                    <div style="display: flex; gap: 10px; margin-left: auto;">
+                        <button type="button" class="btn btn-secondary" id="btn-cancel-card-modal">Cancelar</button>
+                        <button type="submit" class="btn btn-submit">Salvar Cartão</button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -1268,6 +1326,42 @@
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" id="btn-cancel-goal-modal">Cancelar</button>
                     <button type="submit" class="btn btn-submit" id="btn-submit-goal-modal">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 6: MEU PERFIL (Allan Nunes) -->
+    <div class="modal-overlay" id="profile-modal">
+        <div class="modal-content" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 style="font-weight: 700; color: var(--text-primary); font-size: 18px;">Meu Perfil</h3>
+                <button type="button" class="btn-close-modal" id="btn-close-profile-modal" title="Fechar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <form id="profile-form" class="modal-body">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding: 14px 16px; background: var(--bg-input); border-radius: 16px; border: 1px solid var(--border-color);">
+                    <div class="header-avatar-circle" style="width: 52px; height: 52px; font-size: 22px; margin: 0;">
+                        <span id="modal-avatar-letter">A</span>
+                        <div class="avatar-crown-badge" style="width: 18px; height: 18px; top: -3px; right: -3px;">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="#000000"><path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5zm14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/></svg>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-primary); font-size: 16px;" id="modal-profile-title">Allan Nunes</div>
+                        <div style="font-size: 12.5px; color: var(--text-muted);" id="modal-profile-email">allannunesb17@hotmail.com</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="profile-name-input">Nome de Exibição</label>
+                    <input type="text" id="profile-name-input" placeholder="Ex: Allan Nunes" required autocomplete="name" style="width: 100%; padding: 12px 14px; background: var(--bg-input); border: 1.5px solid var(--border-color); border-radius: 12px; font-size: 14px; color: var(--text-primary);">
+                </div>
+
+                <div class="modal-actions" style="margin-top: 20px;">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-profile-modal">Cancelar</button>
+                    <button type="submit" class="btn btn-submit" id="btn-save-profile">Salvar Alterações</button>
                 </div>
             </form>
         </div>
