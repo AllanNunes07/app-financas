@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinPurple - Gestão Financeira Pessoal</title>
-    <meta name="description" content="Controle financeiro pessoal de nível bancário com gestão de contas, cartões de crédito, faturas, metas e lançamentos.">
+    <title>Nunes Finance - Gestão Financeira Pessoal</title>
+    <meta name="description" content="Nunes Finance - Controle financeiro pessoal e empresarial de alta performance com gestão de contas, cartões de crédito, faturas, metas e lançamentos.">
     <link rel="stylesheet" href="style.css">
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,36 +14,115 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="light-theme">
-    <!-- Login Overlay -->
-    <div class="modal-overlay open" id="login-overlay" style="display: flex; z-index: 9999; background: var(--bg-main);">
-        <div class="modal-content" style="max-width: 400px; padding: 2rem;">
-            <div style="text-align: center; margin-bottom: 2rem;">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" style="margin-bottom: 1rem;">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
-                </svg>
-                <h2 style="color: var(--text-primary); font-weight: 600;">FinPurple</h2>
-                <p style="color: var(--text-secondary); font-size: 0.9rem;">Entre com seu e-mail e senha para acessar seus dados</p>
+    <!-- Login & Welcome Screen (Nunes Finance) -->
+    <div class="modal-overlay open auth-overlay-screen" id="login-overlay">
+        <!-- Ambient Aurora Background Elements -->
+        <div class="auth-ambient-orb orb-1"></div>
+        <div class="auth-ambient-orb orb-2"></div>
+        <div class="auth-ambient-orb orb-3"></div>
+        <div class="auth-bg-grid"></div>
+
+        <div class="auth-card">
+            <!-- Header Brand -->
+            <div class="auth-header">
+                <div class="auth-brand-badge">
+                    <svg width="48" height="48" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="10" fill="url(#auth-nunes-grad)" />
+                        <path d="M9 22.5V9.5L23 22.5V9.5" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="23" cy="9.5" r="2" fill="#38BDF8" />
+                        <defs>
+                            <linearGradient id="auth-nunes-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#8B5CF6" />
+                                <stop offset="0.5" stop-color="#6366F1" />
+                                <stop offset="1" stop-color="#3B82F6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1 class="auth-title">Nunes Finance</h1>
+                <p class="auth-subtitle" id="auth-subtitle">Gestão financeira pessoal de alta performance</p>
             </div>
-            
-            <form id="login-form">
-                <div class="form-group">
+
+            <!-- Segmented Tabs (Entrar / Criar Conta) -->
+            <div class="auth-tabs" role="tablist">
+                <button type="button" class="auth-tab-btn active" id="tab-login" role="tab" aria-selected="true">
+                    <span>Entrar</span>
+                </button>
+                <button type="button" class="auth-tab-btn" id="tab-register" role="tab" aria-selected="false">
+                    <span>Criar Conta</span>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="login-form" class="auth-form" autocomplete="on">
+                <div class="auth-input-group">
                     <label for="login-email">E-mail</label>
-                    <input type="email" id="login-email" placeholder="seu@email.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="login-password">Senha</label>
-                    <input type="password" id="login-password" placeholder="******" required>
-                </div>
-                
-                <div id="login-error" style="color: #ef4444; font-size: 0.85rem; margin-bottom: 1rem; text-align: center; display: none;">
-                    Erro ao fazer login.
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email">
+                    </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button type="submit" class="btn btn-submit" id="btn-login" style="width: 100%;">Entrar</button>
-                    <button type="button" class="btn btn-secondary" id="btn-register" style="width: 100%;">Criar Conta</button>
+                <div class="auth-input-group">
+                    <div class="auth-label-row">
+                        <label for="login-password">Senha</label>
+                        <span class="auth-pwd-hint" id="auth-pwd-hint" style="display: none;">Mínimo 6 caracteres</span>
+                    </div>
+                    <div class="auth-input-wrap">
+                        <svg class="auth-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                        </svg>
+                        <input type="password" id="login-password" placeholder="Sua senha secreta" required autocomplete="current-password">
+                        <button type="button" class="auth-toggle-pwd" id="btn-toggle-password" title="Mostrar/Ocultar Senha" aria-label="Mostrar ou ocultar senha">
+                            <svg id="icon-eye-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            <svg id="icon-eye-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
+
+                <!-- Error Message -->
+                <div id="login-error" class="auth-error-box" style="display: none;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span id="login-error-text">Erro ao fazer login.</span>
+                </div>
+
+                <!-- Action Button -->
+                <button type="submit" class="auth-submit-btn" id="btn-login">
+                    <span class="btn-text" id="btn-login-text">Acessar Plataforma</span>
+                    <svg class="btn-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+
+                <!-- Hidden fallback btn-register for compatibility -->
+                <button type="button" id="btn-register" style="display: none;"></button>
             </form>
+
+            <!-- Trust Footer -->
+            <div class="auth-footer">
+                <div class="auth-security-tag">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>Criptografia de ponta a ponta • Nuvem privada</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -52,19 +131,21 @@
         <!-- Sidebar Navigation (Desktop) -->
         <aside class="sidebar">
             <div class="sidebar-brand">
-                <div class="brand-logo">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="url(#purple-grad)" />
-                        <path d="M2 17L12 22L22 17M2 12L12 17L22 12" stroke="url(#purple-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <div class="brand-logo" style="padding: 0; background: transparent; border: none;">
+                    <svg width="30" height="30" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="32" height="32" rx="9" fill="url(#sidebar-nunes-grad)" />
+                        <path d="M9 22.5V9.5L23 22.5V9.5" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+                        <circle cx="23" cy="9.5" r="1.8" fill="#38BDF8" />
                         <defs>
-                            <linearGradient id="purple-grad" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                            <linearGradient id="sidebar-nunes-grad" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
                                 <stop stop-color="#8B5CF6" />
-                                <stop offset="1" stop-color="#6366F1" />
+                                <stop offset="0.5" stop-color="#6366F1" />
+                                <stop offset="1" stop-color="#3B82F6" />
                             </linearGradient>
                         </defs>
                     </svg>
                 </div>
-                <h2>FinPurple</h2>
+                <h2>Nunes Finance</h2>
             </div>
 
             <!-- Quick Add Button in Sidebar (like Mobills Web) -->

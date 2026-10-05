@@ -1,5 +1,5 @@
 /**
- * FinPurple - Gestão Financeira Pessoal (Mobills & Pierre Edition)
+ * Nunes Finance - Gestão Financeira Pessoal (Mobills & Pierre Edition)
  * JavaScript Application Core Logic
  */
 
