@@ -36,5 +36,14 @@
   - Os botões de alternância de faturas (`Abertas` | `Fechadas`) foram estilizados no padrão fintech pílula com fundo suave, tipografia moderna e destaque ativo roxo com gradiente e sombra suave.
   - O botão de ação rápida (`+ Novo Cartão` e `+ Nova Conta`) foi padronizado em formato pílula com efeito hover animado, mantendo a harmonia visual com o restante da aplicação.
 
-
-
+## Histórico do Projeto e Alterações Realizadas (Outubro de 2026)
+- **Simplificação do Seletor de Mês (Header)**:
+  - Removidas as setas laterais `<` e `>`, mantendo apenas a pílula clicável com o nome do mês e a seta para baixo `⌵` conforme solicitado.
+  - O clique direto na pílula abre o menu popover com a lista de meses para seleção rápida.
+- **Perfil do Usuário no Cabeçalho (Estilo Mobills)**:
+  - Implementado o componente de perfil com avatar circular, letra inicial ("A"), badge de coroa (`👑`), nome em destaque ("Allan Nunes") e chevron circular `ⓥ`.
+  - Dropdown flutuante moderno contendo as opções: *Meu perfil*, *Configurações*, *Convidar amigos*, *Blog* e *Sair*.
+  - Modal interativo para edição e salvamento do nome de exibição, persistido tanto no `localStorage` quanto sincronizado no Firestore (`saveData('users')`).
+- **Correção da Criação e Sincronização de Cartões na Nuvem**:
+  - Tratamento e sanitização rigorosa de todos os campos de cartões e contas antes do envio ao Firestore (`style`, `digits`, `brand`, etc.), eliminando valores `undefined` que disparavam o erro `Unsupported field value: undefined` do SDK Firebase.
+  - Adicionado suporte a espelho local em `localStorage` para tolerância a falhas offline e botão de exclusão de cartão diretamente pelo modal de edição.
