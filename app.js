@@ -353,6 +353,8 @@ const toastMessageEl = document.getElementById('toast-message');
 // ==========================================================================
 
 window.initializeAppWithFirebase = async function() {
+    if (window.appInitialized) return;
+    window.appInitialized = true;
     initThemeAndPrivacy();
     setCurrentDateHeader();
     await loadData();
@@ -2882,4 +2884,9 @@ function handleGoalFormSubmit(e) {
 
     closeGoalModal();
     updateDashboard();
+}
+
+// Inicializa caso o Firebase já tenha autenticado antes do carregamento completo do app.js
+if (window.firebaseUser && !window.appInitialized && typeof window.initializeAppWithFirebase === 'function') {
+    window.initializeAppWithFirebase();
 }

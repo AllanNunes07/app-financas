@@ -16,7 +16,7 @@ window.db = firebase.firestore();
 // Variável global para armazenar o usuário
 window.firebaseUser = null;
 
-document.addEventListener('DOMContentLoaded', () => {
+function initAuth() {
     const loginOverlay = document.getElementById('login-overlay');
     const appWrapper = document.getElementById('app-content-wrapper');
     const loginForm = document.getElementById('login-form');
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.auth.signOut();
     });
     const navMenu = document.querySelector('.nav-menu');
-    if (navMenu) {
+    if (navMenu && !navMenu.contains(sidebarLogoutBtn)) {
         navMenu.appendChild(sidebarLogoutBtn);
     }
 
@@ -48,57 +48,83 @@ document.addEventListener('DOMContentLoaded', () => {
         if (user) {
             // Logado
             window.firebaseUser = user;
-            loginOverlay.style.display = 'none';
-            appWrapper.style.display = 'flex';
+            if (loginOverlay) {
+                loginOverlay.classList.remove('open');
+                loginOverlay.style.display = 'none';
+            }
+            if (appWrapper) {
+                appWrapper.style.display = 'flex';
+            }
             
             // Inicia o app.js
             if (window.initializeAppWithFirebase) {
                 window.initializeAppWithFirebase();
+            } else {
+                window.addEventListener('load', () => {
+                    if (window.initializeAppWithFirebase && !window.appInitialized) {
+                        window.initializeAppWithFirebase();
+                    }
+                });
             }
         } else {
             // Deslogado
             window.firebaseUser = null;
-            loginOverlay.style.display = 'flex';
-            appWrapper.style.display = 'none';
+            if (loginOverlay) {
+                loginOverlay.classList.add('open');
+                loginOverlay.style.display = 'flex';
+            }
+            if (appWrapper) {
+                appWrapper.style.display = 'none';
+            }
         }
     });
 
     // Submissão do form: Login
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-        loginError.style.display = 'none';
+    if (loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            loginError.style.display = 'none';
 
-        window.auth.signInWithEmailAndPassword(email, password)
-            .catch(error => {
-                console.error("Login Error:", error);
-                loginError.textContent = "E-mail ou senha incorretos.";
-                loginError.style.display = 'block';
-            });
-    });
+            window.auth.signInWithEmailAndPassword(email, password)
+                .catch(error => {
+                    console.error("Login Error:", error);
+                    loginError.textContent = "E-mail ou senha incorretos.";
+                    loginError.style.display = 'block';
+                });
+        });
+    }
 
     // Cadastro
-    btnRegister.addEventListener('click', () => {
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
-        loginError.style.display = 'none';
+    if (btnRegister) {
+        btnRegister.addEventListener('click', () => {
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            loginError.style.display = 'none';
 
-        if (!email || password.length < 6) {
-            loginError.textContent = "Preencha o e-mail e uma senha de no mínimo 6 caracteres para criar a conta.";
-            loginError.style.display = 'block';
-            return;
-        }
-
-        window.auth.createUserWithEmailAndPassword(email, password)
-            .catch(error => {
-                console.error("Register Error:", error);
-                if (error.code === 'auth/email-already-in-use') {
-                    loginError.textContent = "Este e-mail já está em uso.";
-                } else {
-                    loginError.textContent = "Erro ao criar conta: " + error.message;
-                }
+            if (!email || password.length < 6) {
+                loginError.textContent = "Preencha o e-mail e uma senha de no mínimo 6 caracteres para criar a conta.";
                 loginError.style.display = 'block';
-            });
-    });
-});
+                return;
+            }
+
+            window.auth.createUserWithEmailAndPassword(email, password)
+                .catch(error => {
+                    console.error("Register Error:", error);
+                    if (error.code === 'auth/email-already-in-use') {
+                        loginError.textContent = "Este e-mail já está em uso.";
+                    } else {
+                        loginError.textContent = "Erro ao criar conta: " + error.message;
+                    }
+                    loginError.style.display = 'block';
+                });
+        });
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuth);
+} else {
+    initAuth();
+}

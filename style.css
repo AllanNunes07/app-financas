@@ -1990,6 +1990,17 @@ body.privacy-mode .trans-sum-value {
 }
 .modal-overlay.open { opacity: 1; visibility: visible; }
 
+/* Login Overlay */
+#login-overlay {
+    background-color: var(--bg-main);
+    z-index: 9999;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+#login-overlay .modal-content {
+    transform: scale(1) !important;
+}
+
 .modal-content {
     background-color: var(--bg-secondary);
     border: 1px solid var(--border-color);
